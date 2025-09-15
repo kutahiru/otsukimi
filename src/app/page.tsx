@@ -121,90 +121,120 @@ function Dango() {
   )
 }
 
-// ススキのコンポーネント（アニメ調）
+// ススキのコンポーネント（ふぁさふぁさ版）
 function Susuki() {
   const grassRef = useRef<THREE.Group>(null)
 
-  useFrame((state) => {
-    if (grassRef.current) {
-      // シンプルな風の揺れ
-      grassRef.current.children.forEach((child, i) => {
-        const time = state.clock.elapsedTime
-        const phase = i * 0.3
-        child.rotation.z = Math.sin(time * 1.2 + phase) * 0.2
-      })
-    }
-  })
+  // useFrame((state) => {
+  //   if (grassRef.current) {
+  //     // ふわふわした風の揺れ
+  //     grassRef.current.children.forEach((child, i) => {
+  //       const time = state.clock.elapsedTime
+  //       const phase = i * 0.2
+  //       child.rotation.z = Math.sin(time * 1.5 + phase) * 0.3
+  //       child.rotation.x = Math.cos(time * 0.8 + phase) * 0.1
+  //     })
+  //   }
+  // })
 
   return (
     <group ref={grassRef} position={[-8, 0, -5]}>
-      {Array.from({ length: 15 }, (_, i) => {
-        const x = Math.random() * 6 - 3
-        const z = Math.random() * 6 - 3
-        const height = 1.5 + Math.random() * 1
+      {Array.from({ length: 25 }, (_, i) => {
+        const x = Math.random() * 8 - 4
+        const z = Math.random() * 8 - 4
+        const height = 1.2 + Math.random() * 0.8
+        const clusterSize = 3 + Math.floor(Math.random() * 3)
 
         return (
           <group key={i} position={[x, 0, z]}>
-            {/* 茎 - シンプル */}
-            <mesh position={[0, height / 2, 0]} castShadow>
-              <cylinderGeometry args={[0.02, 0.025, height, 6]} />
-              <meshToonMaterial color="#228B22" />
-            </mesh>
-
-            {/* 葉っぱ - シンプルな平面 */}
-            {Array.from({ length: 4 }, (_, j) => {
-              const leafHeight = height * 0.3 + j * height * 0.2
-              const angle = j * Math.PI * 0.5 + Math.random() * 0.3
-
-              return (
+            {/* 複数の茎でボリューム感 */}
+            {Array.from({ length: clusterSize }, (_, stem) => (
+              <group key={stem}>
+                {/* 茎 */}
                 <mesh
-                  key={j}
                   position={[
-                    Math.sin(angle) * 0.05,
-                    leafHeight,
-                    Math.cos(angle) * 0.05
+                    (Math.random() - 0.5) * 0.1,
+                    height / 2,
+                    (Math.random() - 0.5) * 0.1
                   ]}
-                  rotation={[0, angle, Math.PI * 0.1]}
+                  castShadow
                 >
-                  <planeGeometry args={[0.05, 0.8]} />
-                  <meshToonMaterial color="#32CD32" side={THREE.DoubleSide} />
+                  <cylinderGeometry args={[0.015, 0.02, height, 6]} />
+                  <meshToonMaterial color="#2F4F2F" />
                 </mesh>
-              )
-            })}
 
-            {/* 穂 - シンプルな円錐 */}
-            <mesh
-              position={[0, height + 0.3, 0]}
-              rotation={[0, Math.random() * Math.PI, Math.random() * 0.2 - 0.1]}
-              castShadow
-            >
-              <coneGeometry args={[0.08, 0.5, 6]} />
-              <meshToonMaterial color="#F4A460" />
-            </mesh>
+                {/* 葉っぱ - 控えめに */}
+                {Array.from({ length: 4 + Math.floor(Math.random() * 2) }, (_, j) => {
+                  const leafHeight = height * 0.2 + j * height * 0.1
+                  const angle = (j * Math.PI * 0.3) + Math.random() * 0.4
+                  const leafLength = 0.6 + Math.random() * 0.6
 
-            {/* 穂の飾り毛 - シンプルな線 */}
-            {Array.from({ length: 6 }, (_, k) => {
-              const fiberAngle = (k / 6) * Math.PI * 2
+                  return (
+                    <mesh
+                      key={j}
+                      position={[
+                        Math.sin(angle) * 0.08 + (Math.random() - 0.5) * 0.05,
+                        leafHeight,
+                        Math.cos(angle) * 0.08 + (Math.random() - 0.5) * 0.05
+                      ]}
+                      rotation={[
+                        Math.PI * 0.05 + Math.random() * 0.2,
+                        angle + Math.random() * 0.3,
+                        Math.PI * 0.1 + Math.random() * 0.3
+                      ]}
+                      scale={[1, leafLength, 1]}
+                    >
+                      <planeGeometry args={[0.04, 1]} />
+                      <meshToonMaterial color="#556B2F" side={THREE.DoubleSide} transparent opacity={0.7} />
+                    </mesh>
+                  )
+                })}
 
-              return (
+                {/* ふぁさふぁさの穂 */}
                 <mesh
-                  key={`fiber-${k}`}
                   position={[
-                    Math.sin(fiberAngle) * 0.05,
-                    height + 0.4,
-                    Math.cos(fiberAngle) * 0.05
+                    (Math.random() - 0.5) * 0.15,
+                    height + 0.4 + Math.random() * 0.2,
+                    (Math.random() - 0.5) * 0.15
                   ]}
                   rotation={[
                     Math.random() * 0.3,
-                    fiberAngle,
-                    Math.random() * 0.3
+                    Math.random() * Math.PI,
+                    Math.random() * 0.4 - 0.2
                   ]}
+                  castShadow
                 >
-                  <cylinderGeometry args={[0.002, 0.001, 0.15]} />
-                  <meshBasicMaterial color="#DEB887" />
+                  <coneGeometry args={[0.06, 0.4, 8]} />
+                  <meshToonMaterial color="#F4A460" />
                 </mesh>
-              )
-            })}
+
+                {/* 穂の周りの細かい毛 - 極大量に */}
+                {Array.from({ length: 150 + Math.floor(Math.random() * 90) }, (_, k) => {
+                  const fiberAngle = (k / 25) * Math.PI * 4 + Math.random() * 0.5
+                  const fiberRadius = 0.08 + Math.random() * 0.05
+                  const fiberLength = 0.12 + Math.random() * 0.08
+
+                  return (
+                    <mesh
+                      key={`fiber-${stem}-${k}`}
+                      position={[
+                        Math.sin(fiberAngle) * fiberRadius + (Math.random() - 0.5) * 0.1,
+                        height + 0.4 + Math.random() * 0.3,
+                        Math.cos(fiberAngle) * fiberRadius + (Math.random() - 0.5) * 0.1
+                      ]}
+                      rotation={[
+                        Math.random() * 0.8,
+                        fiberAngle + Math.random() * 0.5,
+                        Math.random() * 0.8
+                      ]}
+                    >
+                      <cylinderGeometry args={[0.001, 0.0005, fiberLength]} />
+                      <meshBasicMaterial color="#F5DEB3" transparent opacity={0.8} />
+                    </mesh>
+                  )
+                })}
+              </group>
+            ))}
           </group>
         )
       })}
@@ -262,25 +292,7 @@ function Engawa() {
         ))}
       </group>
 
-      {/* 縁側の柱（地面から屋根まで） */}
-      {[[-3.5, 0.4, 3.5], [-1.5, 0.4, 3.5], [1.5, 0.4, 3.5], [3.5, 0.4, 3.5]].map((pos, i) => (
-        <mesh key={i} position={pos as [number, number, number]} castShadow>
-          <boxGeometry args={[0.15, 3, 0.15]} />
-          <meshToonMaterial color="#8B4513" />
-        </mesh>
-      ))}
 
-      {/* 縁側の下の支柱（基礎から床まで） */}
-      {Array.from({ length: 4 }, (_, i) => (
-        <mesh
-          key={i}
-          position={[i * 2.5 - 3.75, -0.1, 2]}
-          castShadow
-        >
-          <boxGeometry args={[0.12, 0.6, 0.12]} />
-          <meshToonMaterial color="#8B4513" />
-        </mesh>
-      ))}
 
       {/* 室内の畳 */}
       <group position={[0, 0.25, 4.2]}>
@@ -550,7 +562,7 @@ export default function Home() {
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
       <Canvas
-        camera={{ position: [0, 1.5, 1], fov: 75 }}
+        camera={{ position: [0.5, 0.6, 2], fov: 75 }}
         style={{ background: 'linear-gradient(to bottom, #191970 0%, #000428 100%)' }}
         shadows
       >
@@ -584,10 +596,13 @@ export default function Home() {
           <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade />
 
           <OrbitControls
-            enablePan={true}
-            enableZoom={true}
+            enablePan={false}
+            enableZoom={false}
             enableRotate={true}
             maxPolarAngle={Math.PI / 2}
+            minDistance={0.1}
+            maxDistance={0.1}
+            target={[0.5, 0.9, 2.0]}
           />
         </Suspense>
       </Canvas>
