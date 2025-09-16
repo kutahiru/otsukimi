@@ -1,55 +1,161 @@
 'use client'
 
-import { Canvas, useFrame } from '@react-three/fiber'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls, Stars, useTexture, Plane, Box, Cylinder } from '@react-three/drei'
-import { Suspense, useRef, useMemo } from 'react'
+import { Suspense, useRef, useMemo, useEffect, useState } from 'react'
 import * as THREE from 'three'
 
-// 月のコンポーネント（アニメ調）
+// 月のコンポーネント（高品質版）
 function Moon() {
   const meshRef = useRef<THREE.Mesh>(null)
 
   useFrame((state) => {
     if (meshRef.current) {
-      meshRef.current.rotation.y += 0.002 // 少し早めの回転
+      meshRef.current.rotation.y += 0.001 // よりゆっくりした回転
     }
   })
 
   return (
     <group>
-      {/* メイン月 - シンプルな球体 */}
-      <mesh ref={meshRef} position={[0, 8, -20]}>
-        <sphereGeometry args={[2.2, 32, 32]} />
+      {/* メイン月 - 高解像度 */}
+      <mesh ref={meshRef} position={[3, 8, -20]}>
+        <sphereGeometry args={[2.5, 64, 64]} />
         <meshToonMaterial
-          color="#FFFF99"
+          color="#F5F5DC"
           gradientMap={null}
         />
       </mesh>
 
-      {/* 月の模様 - シンプルなクレーター風 */}
-      <mesh position={[0.3, 8.5, -19.8]}>
-        <circleGeometry args={[0.3, 16]} />
-        <meshBasicMaterial color="#F0F000" transparent opacity={0.3} />
-      </mesh>
-      <mesh position={[-0.5, 7.8, -19.8]}>
-        <circleGeometry args={[0.2, 16]} />
-        <meshBasicMaterial color="#F0F000" transparent opacity={0.2} />
-      </mesh>
-      <mesh position={[0.6, 7.5, -19.8]}>
-        <circleGeometry args={[0.15, 16]} />
-        <meshBasicMaterial color="#F0F000" transparent opacity={0.25} />
-      </mesh>
 
-      {/* 月の光輪 - より目立つアニメ調 */}
-      <mesh position={[0, 8, -20]} scale={[1.3, 1.3, 1.3]}>
-        <sphereGeometry args={[2.2, 16, 16]} />
+      {/* 月の光輪 - 複数層 */}
+      <mesh position={[3, 8, -20]} scale={[1.2, 1.2, 1.2]}>
+        <sphereGeometry args={[2.5, 32, 32]} />
         <meshBasicMaterial
-          color="#FFFF66"
+          color="#F5F5DC"
           transparent
-          opacity={0.15}
+          opacity={0.08}
           side={THREE.BackSide}
         />
       </mesh>
+      <mesh position={[3, 8, -20]} scale={[1.5, 1.5, 1.5]}>
+        <sphereGeometry args={[2.5, 24, 24]} />
+        <meshBasicMaterial
+          color="#F0F0F0"
+          transparent
+          opacity={0.04}
+          side={THREE.BackSide}
+        />
+      </mesh>
+
+
+      {/* うさぎの模様 */}
+      {/* うさぎの体 */}
+      <mesh position={[1.8, 6.8, -17.5]} rotation={[0, 0, 0.3]}>
+        <circleGeometry args={[0.5, 16]} />
+        <meshBasicMaterial color="#D3D3D3" transparent opacity={0.4} />
+      </mesh>
+
+      {/* うさぎの頭 */}
+      <mesh position={[1.4, 7.4, -17.5]} rotation={[0, 0, 0.2]}>
+        <circleGeometry args={[0.3, 16]} />
+        <meshBasicMaterial color="#D3D3D3" transparent opacity={0.4} />
+      </mesh>
+
+      {/* うさぎの耳（長い） */}
+      <mesh position={[1.2, 7.8, -17.5]} rotation={[0, 0, 0.6]} scale={[0.3, 1.5, 1]}>
+        <circleGeometry args={[0.15, 12]} />
+        <meshBasicMaterial color="#D3D3D3" transparent opacity={0.35} />
+      </mesh>
+
+      <mesh position={[1.5, 7.9, -17.5]} rotation={[0, 0, 0.2]} scale={[0.3, 1.5, 1]}>
+        <circleGeometry args={[0.15, 12]} />
+        <meshBasicMaterial color="#D3D3D3" transparent opacity={0.35} />
+      </mesh>
+
+      {/* うさぎの前足（餅つき） */}
+      <mesh position={[1.6, 6.9, -17.5]} rotation={[0, 0, -0.4]} scale={[0.5, 1, 1]}>
+        <circleGeometry args={[0.18, 12]} />
+        <meshBasicMaterial color="#D3D3D3" transparent opacity={0.35} />
+      </mesh>
+
+      {/* うさぎの後ろ足 */}
+      <mesh position={[2.1, 6.3, -17.5]} rotation={[0, 0, -0.2]} scale={[0.7, 1, 1]}>
+        <circleGeometry args={[0.2, 12]} />
+        <meshBasicMaterial color="#D3D3D3" transparent opacity={0.35} />
+      </mesh>
+
+      {/* うさぎの尻尾 */}
+      <mesh position={[2.3, 6.7, -17.5]}>
+        <circleGeometry args={[0.1, 12]} />
+        <meshBasicMaterial color="#D3D3D3" transparent opacity={0.3} />
+      </mesh>
+
+      {/* きりんの模様 */}
+      {/* きりんの体 */}
+      <mesh position={[3.8, 7.0, -17.5]} rotation={[0, 0, 0.1]} scale={[0.8, 1.2, 1]}>
+        <circleGeometry args={[0.4, 16]} />
+        <meshBasicMaterial color="#D3D3D3" transparent opacity={0.4} />
+      </mesh>
+
+      {/* きりんの長い首 */}
+      <mesh position={[3.6, 8.0, -17.5]} rotation={[0, 0, 0.3]} scale={[0.4, 1.8, 1]}>
+        <circleGeometry args={[0.25, 12]} />
+        <meshBasicMaterial color="#D3D3D3" transparent opacity={0.4} />
+      </mesh>
+
+      {/* きりんの頭 */}
+      <mesh position={[3.3, 8.7, -17.5]} rotation={[0, 0, 0.2]} scale={[0.8, 1.4, 1]}>
+        <circleGeometry args={[0.18, 12]} />
+        <meshBasicMaterial color="#D3D3D3" transparent opacity={0.4} />
+      </mesh>
+
+      {/* きりんの鼻先 */}
+      <mesh position={[3.15, 8.95, -17.5]} rotation={[0, 0, 0.2]} scale={[0.6, 1.2, 1]}>
+        <circleGeometry args={[0.12, 8]} />
+        <meshBasicMaterial color="#D3D3D3" transparent opacity={0.4} />
+      </mesh>
+
+      {/* きりんの角（2本） */}
+      <mesh position={[3.2, 8.9, -17.5]} rotation={[0, 0, 0.1]} scale={[0.3, 1, 1]}>
+        <circleGeometry args={[0.08, 8]} />
+        <meshBasicMaterial color="#D3D3D3" transparent opacity={0.35} />
+      </mesh>
+
+      <mesh position={[3.4, 8.9, -17.5]} rotation={[0, 0, 0.1]} scale={[0.3, 1, 1]}>
+        <circleGeometry args={[0.08, 8]} />
+        <meshBasicMaterial color="#D3D3D3" transparent opacity={0.35} />
+      </mesh>
+
+      {/* きりんの前足 */}
+      <mesh position={[3.5, 6.3, -17.5]} rotation={[0, 0, 0]} scale={[0.3, 1.5, 1]}>
+        <circleGeometry args={[0.12, 8]} />
+        <meshBasicMaterial color="#D3D3D3" transparent opacity={0.35} />
+      </mesh>
+
+      <mesh position={[3.8, 6.3, -17.5]} rotation={[0, 0, 0]} scale={[0.3, 1.5, 1]}>
+        <circleGeometry args={[0.12, 8]} />
+        <meshBasicMaterial color="#D3D3D3" transparent opacity={0.35} />
+      </mesh>
+
+      {/* きりんの後ろ足 */}
+      <mesh position={[4.0, 6.0, -17.5]} rotation={[0, 0, 0]} scale={[0.3, 1.2, 1]}>
+        <circleGeometry args={[0.12, 8]} />
+        <meshBasicMaterial color="#D3D3D3" transparent opacity={0.35} />
+      </mesh>
+
+      <mesh position={[4.3, 6.0, -17.5]} rotation={[0, 0, 0]} scale={[0.3, 1.2, 1]}>
+        <circleGeometry args={[0.12, 8]} />
+        <meshBasicMaterial color="#D3D3D3" transparent opacity={0.35} />
+      </mesh>
+
+      {/* きりんの尻尾 */}
+      <mesh position={[4.5, 6.7, -17.5]} rotation={[0, 0, -0.3]} scale={[0.2, 1, 1]}>
+        <circleGeometry args={[0.08, 8]} />
+        <meshBasicMaterial color="#D3D3D3" transparent opacity={0.3} />
+      </mesh>
+
+      {/* 月光の点光源 */}
+      <pointLight position={[3, 8, -18]} intensity={0.2} color="#F5F5DC" />
     </group>
   )
 }
@@ -125,25 +231,26 @@ function Dango() {
 function Susuki() {
   const grassRef = useRef<THREE.Group>(null)
 
-  // useFrame((state) => {
-  //   if (grassRef.current) {
-  //     // ふわふわした風の揺れ
-  //     grassRef.current.children.forEach((child, i) => {
-  //       const time = state.clock.elapsedTime
-  //       const phase = i * 0.2
-  //       child.rotation.z = Math.sin(time * 1.5 + phase) * 0.3
-  //       child.rotation.x = Math.cos(time * 0.8 + phase) * 0.1
-  //     })
-  //   }
-  // })
+  useFrame((state) => {
+    if (grassRef.current) {
+      // ふわふわした風の揺れ
+      grassRef.current.children.forEach((child, i) => {
+        const time = state.clock.elapsedTime
+        const phase = i * 0.3
+        child.rotation.z = Math.sin(time * 1.2 + phase) * 0.2
+        child.rotation.x = Math.cos(time * 0.7 + phase) * 0.08
+      })
+    }
+  })
 
   return (
-    <group ref={grassRef} position={[-8, 0, -5]}>
-      {Array.from({ length: 25 }, (_, i) => {
-        const x = Math.random() * 8 - 4
-        const z = Math.random() * 8 - 4
+    <group ref={grassRef} position={[0, 0, -2]}>
+      {Array.from({ length: 3 }, (_, i) => {
+        const positions = [-1.5, -0.8, -0.1]
+        const x = positions[i]
+        const z = Math.random() * 0.5 - 0.25
         const height = 1.2 + Math.random() * 0.8
-        const clusterSize = 3 + Math.floor(Math.random() * 3)
+        const clusterSize = 2 + Math.floor(Math.random() * 2)
 
         return (
           <group key={i} position={[x, 0, z]}>
@@ -258,6 +365,7 @@ function Engawa() {
         <meshToonMaterial color="#654321" />
       </mesh>
 
+
       {/* 基礎（石の基礎） */}
       {Array.from({ length: 6 }, (_, i) => (
         <mesh
@@ -296,14 +404,14 @@ function Engawa() {
 
       {/* 室内の畳 */}
       <group position={[0, 0.25, 4.2]}>
-        {Array.from({ length: 6 }, (_, i) => (
+        {Array.from({ length: 5 }, (_, i) => (
           <mesh
             key={i}
-            position={[i * 1.2 - 3, 0, 0]}
+            position={[i * 1.1 - 2.2, 0, 0]}
             rotation={[-Math.PI / 2, 0, 0]}
             receiveShadow
           >
-            <planeGeometry args={[1.1, 1.5]} />
+            <planeGeometry args={[1.1, 1.3]} />
             <meshToonMaterial color="#9ACD32" />
           </mesh>
         ))}
@@ -341,9 +449,42 @@ function Engawa() {
         </mesh>
       </group>
 
+      {/* 左側の座布団（斜め配置） */}
+      <group position={[-0.7, 0.28, 2.0]} rotation={[0, Math.PI / 6, 0]}>
+        {/* 座布団本体 */}
+        <mesh receiveShadow>
+          <boxGeometry args={[0.8, 0.08, 0.8]} />
+          <meshToonMaterial color="#9932CC" />
+        </mesh>
+
+        {/* 座布団の房（4隅） */}
+        {[
+          [-0.35, -0.02, -0.35],
+          [0.35, -0.02, -0.35],
+          [-0.35, -0.02, 0.35],
+          [0.35, -0.02, 0.35]
+        ].map((pos, i) => (
+          <mesh key={i} position={pos as [number, number, number]}>
+            <sphereGeometry args={[0.03, 8, 8]} />
+            <meshToonMaterial color="#663399" />
+          </mesh>
+        ))}
+
+        {/* 座布団の縫い目（十字） */}
+        <mesh position={[0, 0.041, 0]}>
+          <boxGeometry args={[0.02, 0.001, 0.6]} />
+          <meshToonMaterial color="#663399" />
+        </mesh>
+        <mesh position={[0, 0.041, 0]} rotation={[0, Math.PI / 2, 0]}>
+          <boxGeometry args={[0.02, 0.001, 0.6]} />
+          <meshToonMaterial color="#663399" />
+        </mesh>
+      </group>
+
+
       {/* 障子戸 */}
       {Array.from({ length: 4 }, (_, i) => (
-        <group key={i} position={[i * 1.8 - 2.7, 1.4, 3.5]}>
+        <group key={i} position={[i * 1.6 - 2.4, 1.4, 3.5]}>
           {/* 障子の木枠 - 縦（4本で3列作る） */}
           {Array.from({ length: 4 }, (_, j) => (
             <mesh key={`v-${j}`} position={[j * 0.53 - 0.8, 0, 0.01]}>
@@ -558,9 +699,78 @@ function Ground() {
   )
 }
 
+// 鈴虫の音声コンポーネント
+function SuzumushiAudio({ isMuted }: { isMuted: boolean }) {
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  useEffect(() => {
+    const audio = new Audio('/audio/suzumushi.mp3')
+    audio.loop = true
+    audio.volume = 0.1
+    audioRef.current = audio
+
+    // ユーザーの操作後に音声を再生
+    const playAudio = () => {
+      if (!isMuted) {
+        audio.play().catch(e => console.log('Audio play failed:', e))
+      }
+      document.removeEventListener('click', playAudio)
+    }
+
+    document.addEventListener('click', playAudio)
+
+    return () => {
+      audio.pause()
+      audio.currentTime = 0
+      document.removeEventListener('click', playAudio)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (audioRef.current) {
+      if (isMuted) {
+        audioRef.current.pause()
+      } else {
+        audioRef.current.play().catch(e => console.log('Audio play failed:', e))
+      }
+    }
+  }, [isMuted])
+
+  return null
+}
+
+
 export default function Home() {
+  const [isMuted, setIsMuted] = useState(false)
+
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
+      <SuzumushiAudio isMuted={isMuted} />
+
+      {/* ミュートボタン */}
+      <button
+        onClick={() => setIsMuted(!isMuted)}
+        style={{
+          position: 'absolute',
+          top: '20px',
+          right: '20px',
+          width: '50px',
+          height: '50px',
+          border: 'none',
+          borderRadius: '50%',
+          background: 'rgba(0, 0, 0, 0.5)',
+          color: 'white',
+          fontSize: '20px',
+          cursor: 'pointer',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
+        {isMuted ? '🔇' : '🔊'}
+      </button>
+
       <Canvas
         camera={{ position: [0.5, 0.6, 2], fov: 75 }}
         style={{ background: 'linear-gradient(to bottom, #191970 0%, #000428 100%)' }}
@@ -599,10 +809,11 @@ export default function Home() {
             enablePan={false}
             enableZoom={false}
             enableRotate={true}
-            maxPolarAngle={Math.PI / 2}
+            maxPolarAngle={Math.PI}
             minDistance={0.1}
             maxDistance={0.1}
             target={[0.5, 0.9, 2.0]}
+            rotateSpeed={0.3}
           />
         </Suspense>
       </Canvas>
