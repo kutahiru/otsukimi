@@ -10,6 +10,7 @@ const notoSansJP = Noto_Sans_JP({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000'),
   title: "秋の夜長の月見〇〇",
   description: "秋の夜長の月見〇〇",
   openGraph: {
