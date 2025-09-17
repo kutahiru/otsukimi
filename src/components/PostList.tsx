@@ -26,6 +26,7 @@ interface PostListProps {
   onEditPost?: (postId: number) => void
   emptyMessage?: string
   emptyActionButton?: React.ReactNode
+  lastPostElementRef?: (node: HTMLDivElement) => void
 }
 
 export function PostList({
@@ -38,7 +39,8 @@ export function PostList({
   onDeletePost,
   onEditPost,
   emptyMessage = "投稿がありません",
-  emptyActionButton
+  emptyActionButton,
+  lastPostElementRef
 }: PostListProps) {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [selectedPost, setSelectedPost] = useState<Post | null>(null)
@@ -73,9 +75,10 @@ export function PostList({
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-        {posts.map((post) => (
+        {posts.map((post, index) => (
           <div
             key={post.id}
+            ref={index === posts.length - 1 ? lastPostElementRef : null}
             className="group relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:border-white/40 transition-colors duration-300 flex flex-col"
           >
             {/* カードヘッダー */}

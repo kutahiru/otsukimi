@@ -5,8 +5,12 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 
 // 投稿一覧を取得
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url)
+    const limit = parseInt(searchParams.get('limit') || '12')
+    const offset = parseInt(searchParams.get('offset') || '0')
+
     const allPosts = await db
       .select({
         id: posts.id,
@@ -22,6 +26,8 @@ export async function GET() {
       .from(posts)
       .leftJoin(users, eq(posts.user_id, users.id))
       .orderBy(desc(posts.created_at))
+      .limit(limit)
+      .offset(offset)
 
     return NextResponse.json(allPosts)
   } catch (error) {

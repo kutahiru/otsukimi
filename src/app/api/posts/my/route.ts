@@ -1,11 +1,11 @@
 import { db } from "@/db"
 import { posts, users } from "@/db/schema"
 import { desc, eq } from "drizzle-orm"
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 
 // ログイン中のユーザーの投稿一覧を取得
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await auth()
 
@@ -15,6 +15,10 @@ export async function GET() {
         { status: 401 }
       )
     }
+
+    const { searchParams } = new URL(request.url)
+    const limit = parseInt(searchParams.get('limit') || '12')
+    const offset = parseInt(searchParams.get('offset') || '0')
 
     // セッションからユーザーIDを取得
     const userId = session.user.id
@@ -34,6 +38,8 @@ export async function GET() {
       .leftJoin(users, eq(posts.user_id, users.id))
       .where(eq(posts.user_id, userId))
       .orderBy(desc(posts.created_at))
+      .limit(limit)
+      .offset(offset)
 
     return NextResponse.json(myPosts)
   } catch (error) {

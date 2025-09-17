@@ -8,7 +8,7 @@ export async function PUT(request: NextRequest) {
   try {
     const session = await auth()
 
-    if (!session?.user?.email) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: '認証が必要です' }, { status: 401 })
     }
 
@@ -26,10 +26,9 @@ export async function PUT(request: NextRequest) {
     await db
       .update(users)
       .set({
-        name: name.trim(),
-        updated_at: new Date()
+        name: name.trim()
       })
-      .where(eq(users.email, session.user.email))
+      .where(eq(users.id, session.user.id))
 
     return NextResponse.json({ message: '名前が更新されました' })
   } catch (error) {

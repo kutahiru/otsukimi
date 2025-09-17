@@ -8,7 +8,7 @@ interface ShareToXProps {
 
 export function ShareToX({ title, url, className = "" }: ShareToXProps) {
   const handleShare = () => {
-    const shareText = `秋の夜長の月見${title}\n\n#秋の夜長の月見〇〇`
+    const shareText = `私の過ごし方はこちら！\n秋の夜長の月見${title}\n#秋の夜長の月見〇〇`
     const shareUrl = url || window.location.origin
 
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`

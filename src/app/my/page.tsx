@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { Header } from "@/components/Header"
 import { NewPostModal } from "@/components/NewPostModal"
@@ -12,11 +12,16 @@ export default function MyPage() {
   const [myPosts, setMyPosts] = useState<Post[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
+  const [offset, setOffset] = useState(0)
   const [isEditingName, setIsEditingName] = useState(false)
   const [newName, setNewName] = useState('')
   const [isSavingName, setIsSavingName] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editingPost, setEditingPost] = useState<Post | null>(null)
+  const observer = useRef<IntersectionObserver | null>(null)
+  const LIMIT = 12
 
   useEffect(() => {
     if (status === 'loading') return
@@ -27,17 +32,48 @@ export default function MyPage() {
     fetchMyPosts()
   }, [session, status])
 
-  const fetchMyPosts = async () => {
+  const fetchMyPosts = async (currentOffset = 0, isInitial = true) => {
     try {
-      const response = await fetch('/api/posts/my')
+      if (isInitial) {
+        setIsLoading(true)
+      } else {
+        setIsLoadingMore(true)
+      }
+
+      const response = await fetch(`/api/posts/my?limit=${LIMIT}&offset=${currentOffset}`)
       const posts = await response.json()
-      setMyPosts(posts)
+
+      if (isInitial) {
+        setMyPosts(posts)
+        setOffset(LIMIT)
+      } else {
+        setMyPosts(prev => [...prev, ...posts])
+        setOffset(prev => prev + LIMIT)
+      }
+
+      // 取得した投稿数がLIMITより少ない場合、もうデータがないと判断
+      if (posts.length < LIMIT) {
+        setHasMore(false)
+      }
     } catch (error) {
       console.error('マイ投稿の取得に失敗しました:', error)
     } finally {
       setIsLoading(false)
+      setIsLoadingMore(false)
     }
   }
+
+  // 無限スクロール用のコールバック
+  const lastPostElementRef = useCallback((node: HTMLDivElement) => {
+    if (isLoadingMore) return
+    if (observer.current) observer.current.disconnect()
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        fetchMyPosts(offset, false)
+      }
+    })
+    if (node) observer.current.observe(node)
+  }, [isLoadingMore, hasMore, offset])
 
   const handleNewPost = async (title: string, description: string) => {
     try {
@@ -50,7 +86,10 @@ export default function MyPage() {
       })
 
       if (response.ok) {
-        await fetchMyPosts()
+        // 新規投稿後は最初からリセット
+        setOffset(0)
+        setHasMore(true)
+        await fetchMyPosts(0, true)
       }
     } catch (error) {
       console.error('投稿に失敗しました:', error)
@@ -67,7 +106,10 @@ export default function MyPage() {
       })
 
       if (response.ok) {
-        await fetchMyPosts()
+        // 削除後は最初からリセット
+        setOffset(0)
+        setHasMore(true)
+        await fetchMyPosts(0, true)
       }
     } catch (error) {
       console.error('投稿の削除に失敗しました:', error)
@@ -95,7 +137,10 @@ export default function MyPage() {
       })
 
       if (response.ok) {
-        await fetchMyPosts()
+        // 編集後は最初からリセット
+        setOffset(0)
+        setHasMore(true)
+        await fetchMyPosts(0, true)
       } else {
         throw new Error('更新に失敗しました')
       }
@@ -248,7 +293,22 @@ export default function MyPage() {
               最初の投稿を作成
             </button>
           }
+          lastPostElementRef={lastPostElementRef}
         />
+
+        {/* 無限スクロール用のローディング表示 */}
+        {isLoadingMore && hasMore && (
+          <div className="flex justify-center items-center py-8">
+            <div className="text-white text-lg">さらに読み込み中...</div>
+          </div>
+        )}
+
+        {/* これ以上データがない場合の表示 */}
+        {!hasMore && myPosts.length > 0 && (
+          <div className="flex justify-center items-center py-8">
+            <div className="text-gray-400 text-sm">すべての投稿を表示しました</div>
+          </div>
+        )}
       </div>
 
       {/* 新規投稿モーダル */}

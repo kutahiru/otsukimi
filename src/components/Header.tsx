@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useSession, signIn, signOut } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 
 interface HeaderProps {
   currentPage?: 'home' | 'posts' | 'new' | 'my'
@@ -68,7 +68,7 @@ export function Header({ currentPage = 'home' }: HeaderProps) {
               </button>
             ) : (
               <button
-                onClick={() => signIn('google', { callbackUrl: '/posts' })}
+                onClick={() => window.location.href = '/auth/signin'}
                 className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white px-6 py-2 rounded-xl font-semibold transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-500/25"
               >
                 ログイン

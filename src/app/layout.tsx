@@ -12,6 +12,17 @@ const notoSansJP = Noto_Sans_JP({
 export const metadata: Metadata = {
   title: "秋の夜長の月見〇〇",
   description: "秋の夜長の月見〇〇",
+  openGraph: {
+    title: "秋の夜長の月見〇〇",
+    description: "秋の夜長の月見〇〇",
+    images: ["/ogp.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "秋の夜長の月見〇〇",
+    description: "秋の夜長の月見〇〇",
+    images: ["/ogp.png"],
+  },
 };
 
 export default function RootLayout({
@@ -20,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="ja">
       <body
         className={`${notoSansJP.variable} antialiased`}
       >

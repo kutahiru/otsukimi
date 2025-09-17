@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { Header } from "@/components/Header"
 import { NewPostModal } from "@/components/NewPostModal"
@@ -11,22 +11,58 @@ export default function PostsPage() {
   const [allPosts, setAllPosts] = useState<Post[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
+  const [offset, setOffset] = useState(0)
+  const observer = useRef<IntersectionObserver | null>(null)
+  const LIMIT = 12
 
   useEffect(() => {
     fetchPosts()
   }, [])
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (currentOffset = 0, isInitial = true) => {
     try {
-      const response = await fetch('/api/posts')
+      if (isInitial) {
+        setIsLoading(true)
+      } else {
+        setIsLoadingMore(true)
+      }
+
+      const response = await fetch(`/api/posts?limit=${LIMIT}&offset=${currentOffset}`)
       const posts = await response.json()
-      setAllPosts(posts)
+
+      if (isInitial) {
+        setAllPosts(posts)
+        setOffset(LIMIT)
+      } else {
+        setAllPosts(prev => [...prev, ...posts])
+        setOffset(prev => prev + LIMIT)
+      }
+
+      // 取得した投稿数がLIMITより少ない場合、もうデータがないと判断
+      if (posts.length < LIMIT) {
+        setHasMore(false)
+      }
     } catch (error) {
       console.error('投稿の取得に失敗しました:', error)
     } finally {
       setIsLoading(false)
+      setIsLoadingMore(false)
     }
   }
+
+  // 無限スクロール用のコールバック
+  const lastPostElementRef = useCallback((node: HTMLDivElement) => {
+    if (isLoadingMore) return
+    if (observer.current) observer.current.disconnect()
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        fetchPosts(offset, false)
+      }
+    })
+    if (node) observer.current.observe(node)
+  }, [isLoadingMore, hasMore, offset])
 
   const handleNewPost = async (title: string, description: string) => {
     try {
@@ -39,7 +75,10 @@ export default function PostsPage() {
       })
 
       if (response.ok) {
-        await fetchPosts() // 投稿一覧を再取得
+        // 新規投稿後は最初からリセット
+        setOffset(0)
+        setHasMore(true)
+        await fetchPosts(0, true)
       }
     } catch (error) {
       console.error('投稿に失敗しました:', error)
@@ -76,13 +115,20 @@ export default function PostsPage() {
               無理に月見にとらわれることなくご自由にどうぞ。
             </p>
 
-            {/* 新規投稿ボタン - ログイン時のみ表示 */}
-            {session && (
+            {/* 投稿/ログインボタン */}
+            {session ? (
               <button
                 onClick={() => setIsModalOpen(true)}
                 className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-500/25"
               >
                 今すぐ投稿する
+              </button>
+            ) : (
+              <button
+                onClick={() => window.location.href = '/auth/signin'}
+                className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-500/25"
+              >
+                ログインして投稿する
               </button>
             )}
           </div>
@@ -102,7 +148,22 @@ export default function PostsPage() {
               </button>
             )
           }
+          lastPostElementRef={lastPostElementRef}
         />
+
+        {/* 無限スクロール用のローディング表示 */}
+        {isLoadingMore && hasMore && (
+          <div className="flex justify-center items-center py-8">
+            <div className="text-white text-lg">さらに読み込み中...</div>
+          </div>
+        )}
+
+        {/* これ以上データがない場合の表示 */}
+        {!hasMore && allPosts.length > 0 && (
+          <div className="flex justify-center items-center py-8">
+            <div className="text-gray-400 text-sm">すべての投稿を表示しました</div>
+          </div>
+        )}
       </div>
 
       {/* 新規投稿モーダル */}
