@@ -140,7 +140,7 @@ export default function Scene3D() {
           minDistance={0.1}
           maxDistance={0.1}
           target={[0.5, 0.9, 2.0]}
-          rotateSpeed={0.3}
+          rotateSpeed={-0.3}
         />
       </Suspense>
     </Canvas>
