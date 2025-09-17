@@ -7,7 +7,7 @@ import { auth } from "@/auth"
 // 投稿を更新
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -19,7 +19,8 @@ export async function PUT(
       )
     }
 
-    const postId = parseInt(params.id)
+    const { id } = await params
+    const postId = parseInt(id)
     if (isNaN(postId)) {
       return NextResponse.json(
         { error: "無効な投稿IDです" },
@@ -70,7 +71,7 @@ export async function PUT(
 // 投稿を削除
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -82,7 +83,8 @@ export async function DELETE(
       )
     }
 
-    const postId = parseInt(params.id)
+    const { id } = await params
+    const postId = parseInt(id)
 
     if (isNaN(postId)) {
       return NextResponse.json(
