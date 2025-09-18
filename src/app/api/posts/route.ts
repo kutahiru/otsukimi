@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '12')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    const allPosts = await db
+    const fetchedPosts = await db
       .select({
         id: posts.id,
         title: posts.title,
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       .limit(limit)
       .offset(offset)
 
-    return NextResponse.json(allPosts)
+    return NextResponse.json(fetchedPosts)
   } catch (error) {
     console.error("投稿取得エラー:", error)
     return NextResponse.json(
