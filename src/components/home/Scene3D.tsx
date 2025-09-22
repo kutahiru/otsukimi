@@ -7,6 +7,36 @@ import { useRouter } from 'next/navigation'
 import { Moon, Susuki, Engawa, StoneLantern, Ground } from './objects'
 import ConfirmModal from './ConfirmModal'
 
+// 星で描く下向き矢印コンポーネント
+function StarArrow() {
+  // 下向き矢印の星の座標パターン
+  const arrowStars = [
+    // 矢印の軸部分（縦のライン）
+    [0, 8, 0], [0, 6, 0], [0, 4, 0], [0, 2, 0], [0, 0, 0],
+    // 矢印の先端部分（左側）
+    [-3, -1, 0], [-2, -2, 0], [-1, -3, 0],
+    // 矢印の先端部分（右側）
+    [3, -1, 0], [2, -2, 0], [1, -3, 0],
+    // 矢印の先端（中央）
+    [0, -1, 0], [0, -3, 0], [0, -4, 0]
+  ]
+
+  return (
+    <group position={[0.5, 25, 0]} rotation={[Math.PI/2, 0, 0]}>
+      {arrowStars.map((position, index) => (
+        <mesh key={index} position={[position[0], position[1], position[2]]}>
+          <sphereGeometry args={[0.12, 6, 6]} />
+          <meshBasicMaterial
+            color="#FFFFFF"
+            transparent
+            opacity={0.9}
+          />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
 // 月見団子のコンポーネント（アニメ調）
 function Dango({ onDangoClick }: { onDangoClick: () => void }) {
   // ピラミッド型の団子配置（密着）
@@ -131,6 +161,7 @@ export default function Scene3D() {
         <Engawa />
 
         <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade />
+        <StarArrow />
 
         <OrbitControls
           enablePan={false}
