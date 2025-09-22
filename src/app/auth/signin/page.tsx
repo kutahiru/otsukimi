@@ -15,6 +15,7 @@ type Provider = {
 export default function SignInPage() {
   const [providers, setProviders] = useState<Record<string, Provider> | null>(null)
 
+  // 利用可能なプロバイダーの情報を取得
   useEffect(() => {
     const setAuthProviders = async () => {
       const providers = await getProviders()
